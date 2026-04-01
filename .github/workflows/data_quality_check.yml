@@ -1,0 +1,83 @@
+name: Data Quality Check
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 3 * * *'  # Nightly at 3am — after the main CI pipeline at 2am
+
+jobs:
+  data-quality:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB:       court_dw
+          POSTGRES_USER:     court_admin
+          POSTGRES_PASSWORD: court_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    env:
+      DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Upgrade pip
+        run: pip install --upgrade pip
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate synthetic data
+        run: python data/synthetic/generate_data.py
+
+      - name: Create clean_cases table
+        run: |
+          PGPASSWORD=court_pass psql \
+            -h localhost -U court_admin -d court_dw -c "
+          CREATE TABLE IF NOT EXISTS clean_cases (
+            case_number    TEXT PRIMARY KEY,
+            case_type      TEXT,
+            filed_date     TIMESTAMP,
+            status         TEXT,
+            court_id       TEXT,
+            judge_id       TEXT,
+            notes          TEXT,
+            ssn_hash       TEXT,
+            transformed_at TIMESTAMP
+          );"
+
+      - name: Seed raw tables
+        run: python loaders/seed_raw_tables.py
+
+      - name: Run ETL pipeline
+        run: python -m project_1_case_flow_etl.run
+
+      - name: Run data quality checks
+        run: python project_3_data_quality/run_checks.py
+
+      - name: Upload quality report as artifact
+        if: always()  # Upload even if checks fail — so you can inspect the report
+        uses: actions/upload-artifact@v4
+        with:
+          name: data-quality-report
+          path: project_3_data_quality/reports/
+          retention-days: 30
