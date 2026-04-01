@@ -25,6 +25,9 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+    env:
+      DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -35,12 +38,42 @@ jobs:
           python-version: '3.11'
 
       - name: Install dependencies
-        run: pip install -r requirements.txt
+        run: |
+          pip install \
+            pandas \
+            sqlalchemy \
+            psycopg2-binary \
+            pydantic \
+            faker \
+            pytest
+
+      - name: Generate synthetic data
+        run: python data/synthetic/generate_data.py
+
+      - name: Create clean_cases table
+        run: |
+          PGPASSWORD=court_pass psql \
+            -h localhost -U court_admin -d court_dw -c "
+          CREATE TABLE IF NOT EXISTS clean_cases (
+            case_number    TEXT PRIMARY KEY,
+            case_type      TEXT,
+            filed_date     TIMESTAMP,
+            status         TEXT,
+            court_id       TEXT,
+            judge_id       TEXT,
+            notes          TEXT,
+            ssn_hash       TEXT,
+            transformed_at TIMESTAMP
+          );"
+
+      - name: Seed raw tables
+        run: python loaders/seed_raw_tables.py
+
+      - name: Run ETL pipeline
+        run: python -m project_1_case_flow_etl.run
 
       - name: Run unit tests
         run: pytest project_1_case_flow_etl/tests/ -v --tb=short
-        env:
-          DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw
 
       - name: Validate DAG syntax
         run: |
@@ -54,5 +87,3 @@ jobs:
 
       - name: Run data quality checks
         run: python project_3_data_quality/run_checks.py
-        env:
-          DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw
