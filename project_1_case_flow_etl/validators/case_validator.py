@@ -21,8 +21,8 @@ class CaseRecord(BaseModel):
     @field_validator('case_type')
     @classmethod
     def validate_case_type(cls, v):
-        if v is None:
-            return v
+        if v is None or str(v).strip() == '' or str(v).lower() == 'none':
+            return None
         valid = {'criminal', 'civil', 'family', 'traffic', 'probate'}
         if v.lower() not in valid:
             raise ValueError(f'Invalid case_type: {v}')
@@ -36,10 +36,15 @@ class CaseValidator:
 
         for idx, row in df.iterrows():
             try:
+                case_type = row.get('case_type')
+                if pd.isna(case_type) if hasattr(case_type, '__class__') else False:
+                    case_type = None
+
                 CaseRecord(
                     case_number=str(row.get('case_number', '')),
-                    case_type=row.get('case_type'),
-                    filed_date=str(row.get('filed_date')) if pd.notna(row.get('filed_date')) else None,
+                    case_type=case_type,
+                    filed_date=str(row.get('filed_date')) if pd.notna(
+                        row.get('filed_date')) else None,
                     status=row.get('status'),
                 )
                 valid_indices.append(idx)
