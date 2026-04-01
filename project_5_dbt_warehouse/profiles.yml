@@ -1,0 +1,12 @@
+judicial_dw:
+  target: dev
+  outputs:
+    dev:
+      type:     postgres
+      host:     127.0.0.1
+      port:     5433
+      user:     court_admin
+      password: court_pass
+      dbname:   court_dw
+      schema:   public
+      threads:  4

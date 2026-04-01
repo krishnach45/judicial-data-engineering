@@ -1,0 +1,58 @@
+name: Judicial Data Engineering CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_DB:       court_dw
+          POSTGRES_USER:     court_admin
+          POSTGRES_PASSWORD: court_pass
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Run unit tests
+        run: pytest project_1_case_flow_etl/tests/ -v --tb=short
+        env:
+          DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw
+
+      - name: Validate DAG syntax
+        run: |
+          python -c "
+          import ast
+          with open('project_4_airflow_orchestration/dags/court_migration_dag.py') as f:
+              source = f.read()
+          ast.parse(source)
+          print('DAG syntax valid')
+          "
+
+      - name: Run data quality checks
+        run: python project_3_data_quality/run_checks.py
+        env:
+          DATABASE_URL: postgresql://court_admin:court_pass@localhost:5432/court_dw

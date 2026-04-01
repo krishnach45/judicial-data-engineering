@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+*.pyo
+venv/
+.env
+data/synthetic/*.csv
+migration_errors/
+target/
+dbt_packages/
+.DS_Store
+desktop.ini
+Thumbs.db
+*.pdb
+*.dll

@@ -1,0 +1,31 @@
+version: 2
+
+models:
+  - name: case_analytics
+    description: "Analytics-ready court case table with derived fields for reporting"
+    columns:
+      - name: case_number
+        tests:
+          - unique
+          - not_null
+      - name: case_type
+        tests:
+          - not_null
+      - name: resolution_category
+        tests:
+          - accepted_values:
+              values: ['resolved', 'active', 'unknown']
+      - name: court_division
+        tests:
+          - accepted_values:
+              values: ['criminal_justice', 'civil_justice', 'family_court', 'other']
+
+  - name: judge_metrics
+    description: "Per-judge case load and performance metrics"
+    columns:
+      - name: judge_id
+        tests:
+          - not_null
+      - name: total_cases
+        tests:
+          - not_null

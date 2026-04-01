@@ -1,0 +1,82 @@
+{
+  "run_at": "2026-04-01T01:26:31.533475",
+  "table": "clean_cases",
+  "total_rows": 9362,
+  "checks_passed": 8,
+  "checks_total": 8,
+  "overall": true,
+  "results": [
+    {
+      "check": "not_null",
+      "column": "case_number",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 100.0,
+      "success": true
+    },
+    {
+      "check": "unique",
+      "column": "case_number",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 100.0,
+      "success": true
+    },
+    {
+      "check": "valid_values",
+      "column": "case_type",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 95.0,
+      "success": true
+    },
+    {
+      "check": "valid_values",
+      "column": "status",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 95.0,
+      "success": true
+    },
+    {
+      "check": "not_null",
+      "column": "status",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 95.0,
+      "success": true
+    },
+    {
+      "check": "not_null",
+      "column": "court_id",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100.0,
+      "threshold": 100.0,
+      "success": true
+    },
+    {
+      "check": "pii_removed",
+      "column": "ssn",
+      "passed": 1,
+      "total": 1,
+      "pass_rate": 100,
+      "threshold": 100,
+      "success": true
+    },
+    {
+      "check": "row_count_gt_0",
+      "column": "table",
+      "passed": 9362,
+      "total": 9362,
+      "pass_rate": 100,
+      "threshold": 100,
+      "success": true
+    }
+  ]
+}

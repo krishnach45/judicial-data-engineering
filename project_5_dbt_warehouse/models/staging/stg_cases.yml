@@ -1,0 +1,39 @@
+version: 2
+
+sources:
+  - name: court_raw
+    database: court_dw
+    schema: public
+    tables:
+      - name: clean_cases
+
+models:
+  - name: stg_cases
+    description: "Cleaned and standardized court case records"
+    columns:
+      - name: case_number
+        description: "Unique case identifier"
+        tests:
+          - unique
+          - not_null
+
+      - name: case_type
+        description: "Type of court case"
+        tests:
+          - not_null
+          - accepted_values:
+              values: ['criminal', 'civil', 'family', 'traffic', 'probate']
+
+      - name: status
+        description: "Current case status"
+        tests:
+          - accepted_values:
+              values: ['open', 'closed', 'pending', 'dismissed', 'appealed']
+
+      - name: filed_date
+        description: "Date the case was filed"
+
+      - name: court_id
+        description: "ID of the court handling the case"
+        tests:
+          - not_null

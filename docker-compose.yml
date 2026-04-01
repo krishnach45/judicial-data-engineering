@@ -1,0 +1,15 @@
+services:
+  postgres:
+    image: postgres:15
+    container_name: court_db
+    environment:
+      POSTGRES_DB: court_dw
+      POSTGRES_USER: court_admin
+      POSTGRES_PASSWORD: court_pass
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
